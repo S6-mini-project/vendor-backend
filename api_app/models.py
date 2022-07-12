@@ -16,3 +16,11 @@ class Orders(models.Model):
     def __str__(self):
         """String for representing the MyModelName object (in Admin site etc.)."""
         return self.qty
+    
+class Stocks(models.Model):
+    medicine_id  =  models.AutoField(primary_key=True)
+    medicine_name = models.CharField(max_length=255)
+    medicine_qty = models.IntegerField()
+    
+    class Meta:
+        ordering = ['medicine_id']

@@ -1,71 +1,78 @@
 from django.core import serializers
-from  .models import Orders
-from .serializers import OrderSerializer
-from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from  .models import Orders,Stocks
+from .serializers import OrderSerializer,StockSerializer
+from django.shortcuts import  render
 # Create your views here.
 from rest_framework.decorators import APIView,api_view
 from rest_framework.renderers import TemplateHTMLRenderer
-from rest_framework.response import Response
-from django.forms.models import model_to_dict
+from django.contrib import messages
+from django.db import connection
+
 
 @api_view(['GET','POST'])
 def index(request):
-    
-            # return render(request,"orders.html")
-            return render(request, "index.html")
-    #  elif request.method == 'POST':
-    #         # print(type,request.data['qty'])
-    #         qty = str(request.data['qty'])
-    #         context={
-    #              "data" : "User has ordered "+qty+" Paracetamol",
-    #         }
-    #         print(context["data"])
-    #         # val = context["data"]
-    #         return render(request, "orders.html")
-
-@api_view(['GET'])
-def vendor(request):
+    # print(request.data)
+    return render(request, "orders.html")
+ 
+@api_view(['POST','GET'])
+def medicineadd(request):
     if request.method == 'GET':
-            # print(type,request.data['qty'])
-            # if request.method == 'GET':
-            #     qty = str(request.GET.get('qty'))
-            #     # print(request.GET)
-            #     print(qty)
-            #     context={
-            #         "data" : "User has ordered "+qty+" Paracetamol",
-            #     }
-            return render(request, "orders.html")
-    # elif request.method == 'GET':
-    #         # qty = str(request.data['qty'])
-    #         # print(request.data)
-    #         return render(request,"orders.html")  
-   
+            stocks = Stocks.objects.all()
+            return render(request, "orders.html",{"stocks" : stocks})
+    elif request.method == 'POST':
+        try:
+            name = request.POST.get('name')
+            qty = request.POST.get('qty')
+            stock_instance = Stocks.objects.create(medicine_name=name,medicine_qty=qty)
+            stocks = Stocks.objects.all()
+            return render(request, "orders.html",{"stocks" : stocks})
+        except Exception as e:
+                print(e)
+        
+
+
+# @api_view(['GET'])
+# def vendor(request):
+#     if request.method == 'GET':
+#             return render(request, "index.html")
 class VendorAPI(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     def get(self,request):
             orders = Orders.objects.all()
-            serializer = OrderSerializer(orders, many=True)
-            # values = serializers.serialize( "python", Orders.objects.all() )
-            print(serializer.data[0]['qty'])
             if request.method == 'GET':
-                # context = {
-                #         "data" : "User has ordered "+serializer.data[0]['qty']+" nos Paracetamol"
-                #         # "data" : serializer.data
-                #     }
                 return render(request, "index.html",{"orders" : orders}  )
             
     def post(self,request):
-                # print(type,request.data['qty'])
-            #  print(request.data['qty'])
-            #  qty=request.data['qty']
         if request.method == 'POST':
             try:
                 serializer = OrderSerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save()
-                    return render(request, "orders.html")       
+                    return render(request, "index.html")       
             except Exception as e:
                 print(e)
-                # return HttpResponse(data)
-            # return render(request, "orders.html",context)    
+
+@api_view(['GET'])
+def reset_id(request):
+    cursor = connection.cursor()
+    cursor.execute('''UPDATE `api_app_stocks` set medicine_id = (@increment_value := @increment_value+ 1) order by medicine_id''')
+    stocks = Stocks.objects.all()
+    return render(request, "orders.html",{"stocks" : stocks})         
+    # UPDATE `api_app_stocks` set medicine_id = (@increment_value := @increment_value+ 1) order by medicine_id;
+
+@api_view(['GET'])   
+def delete_orders(request):
+    cursor = connection.cursor()
+    cursor.execute('''truncate table api_app_orders''') 
+    orders = Orders.objects.all() 
+    return render(request, "index.html",{"orders" : orders}  )       
+ 
+@api_view(['GET'])   
+def delete_stocks(request):
+    cursor = connection.cursor()
+    cursor.execute('''truncate table api_app_stocks''') 
+    stocks = Stocks.objects.all()
+    return render(request, "orders.html",{"stocks" : stocks})           
+ 
+     
+    
