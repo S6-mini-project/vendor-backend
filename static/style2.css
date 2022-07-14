@@ -434,7 +434,7 @@ main.l-main {
   transition: padding 0.5s ease-in-out;
 }
 main.l-main .content-wrapper {
-    background-color: #072048;
+    background-color:#242e42;
   padding: 25px;
   height: 100%;
 }
@@ -466,4 +466,7 @@ main.l-main .page-title {
 }
 .container{
   background: #242e42;
+}
+main.l-main .content-wrapper {
+  background-color:#242e42;
 }

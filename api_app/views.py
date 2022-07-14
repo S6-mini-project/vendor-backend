@@ -12,7 +12,8 @@ from django.db import connection
 @api_view(['GET','POST'])
 def index(request):
     # print(request.data)
-    return render(request, "orders.html")
+    stocks = Stocks.objects.all()
+    return render(request, "orders.html",{"stocks" : stocks})
  
 @api_view(['POST','GET'])
 def medicineadd(request):
@@ -30,15 +31,11 @@ def medicineadd(request):
                 print(e)
         
 
-
-# @api_view(['GET'])
-# def vendor(request):
-#     if request.method == 'GET':
-#             return render(request, "index.html")
 class VendorAPI(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     def get(self,request):
             orders = Orders.objects.all()
+            print(orders)
             if request.method == 'GET':
                 return render(request, "index.html",{"orders" : orders}  )
             
